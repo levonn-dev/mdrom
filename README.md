@@ -73,3 +73,7 @@ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/c0d3ddc9cf3f
 ## Release
 
 Pushing a tag such as `v0.1.0` runs the release workflow: the coverage gate, then GoReleaser publishing `mdrom` binaries for Linux, macOS, and Windows (amd64 and arm64) as a GitHub release with a checksum file. `task release:snapshot` builds the same archives into `dist/` locally without publishing; `task release:check` validates `.goreleaser.yaml`. Both need the folder to be a git repository.
+
+## License
+
+[MIT](LICENSE). The files `mdrom init` writes into your project, including the runtime helpers it compiles into your ROM, are yours to use, modify, and distribute without attribution.
