@@ -1,0 +1,34 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # standard library only: there is no go.sum to key a module cache on
+      - uses: arduino/setup-task@c0bc642852239c2689f73f4ea6459c29405f3c52 # v3.0.0
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install golangci-lint
+        # Installer pinned to the v2.12.2 tag's commit, not HEAD.
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/c0d3ddc9cf3faa61a4e378e879ece580256d76e5/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v2.12.2
+      - name: Install cross tools for the generated-project build test
+        run: sudo apt-get update && sudo apt-get install -y gcc-m68k-linux-gnu cmake ninja-build
+      - name: Lint
+        run: task lint
+      - name: Test + coverage gate (80%)
+        run: task test:cover
+      - name: Docs snippets
+        run: task docs:check

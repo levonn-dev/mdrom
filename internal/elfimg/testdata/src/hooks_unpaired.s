@@ -1,0 +1,3 @@
+    .section .hook_000300,"ax"
+    .byte   0x4e,0xb9,0x00,0x10,0x00,0x00
+    .section .note.GNU-stack,"",%progbits

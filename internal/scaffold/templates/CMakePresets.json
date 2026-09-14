@@ -1,0 +1,17 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 28, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "m68k",
+      "displayName": "m68k patch",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/m68k",
+      "toolchainFile": "${sourceDir}/cmake/m68k-toolchain.cmake",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "m68k", "configurePreset": "m68k" }
+  ]
+}

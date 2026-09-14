@@ -1,0 +1,16 @@
+version: "2"
+linters:
+  enable:
+    - misspell
+  settings:
+    errcheck:
+      # Writes to the CLI's stdout/stderr and closing a read-only ELF have no useful error to report.
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (*debug/elf.File).Close
+formatters:
+  enable:
+    - gofmt
+    - goimports

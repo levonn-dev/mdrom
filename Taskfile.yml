@@ -1,0 +1,100 @@
+# go-task taskfile (https://taskfile.dev). `task` with no args lists every
+# task. One Go module, standard library only; `task check` is the
+# pre-commit gate and CI runs `task lint` then `task test:cover`.
+
+version: "3"
+
+tasks:
+
+  default:
+    desc: List available tasks (run with no args)
+    silent: true
+    cmds:
+      - task --list
+
+  # ------------------------------ bootstrap ------------------------------
+
+  bootstrap:
+    desc: Verify required tools are installed (goreleaser is needed only by the release tasks)
+    cmds:
+      - for tool in go golangci-lint; do
+          command -v $tool >/dev/null || { echo "MISSING $tool; see README Prerequisites"; exit 1; };
+        done
+      - echo "bootstrap OK"
+
+  # -------------------------------- lint ---------------------------------
+  #
+  # golangci-lint v2 also formats (gofmt/goimports): lint covers formatting
+  # too, and lint:fix applies it.
+
+  lint:
+    desc: 'Verify everything: golangci-lint (incl. gofmt/goimports). The CI gate.'
+    cmds:
+      - golangci-lint run ./...
+
+  lint:fix:
+    desc: 'Auto-fix what is fixable: golangci-lint --fix (formatting + lint)'
+    cmds:
+      - golangci-lint run --fix ./...
+
+  # -------------------------------- build --------------------------------
+
+  build:
+    desc: Compile mdrom into bin/
+    cmds:
+      - go build -o bin/mdrom ./cmd/mdrom
+
+  install:
+    desc: Install mdrom into $(go env GOPATH)/bin, where the patch project's CMake looks for it
+    cmds:
+      - go install ./cmd/mdrom
+
+  # -------------------------------- test ---------------------------------
+
+  test:
+    desc: Full test suite
+    cmds:
+      - go test ./...
+
+  test:cover:
+    desc: Coverage gate (80%)
+    cmds:
+      - scripts/coverage.sh 80
+
+  # -------------------------------- docs ---------------------------------
+
+  docs:check:
+    desc: 'Compile every c/asm snippet in docs/ with the cross compiler and check the links'
+    cmds:
+      - scripts/check-docs.sh
+
+  # ---------------------------- check / clean ----------------------------
+
+  check:
+    desc: 'Pre-commit gate: lint (incl. formatting) + build + test + docs snippets. Non-mutating. (CI additionally enforces the 80% coverage gate via test:cover.)'
+    cmds:
+      - task: lint
+      - task: build
+      - task: test
+      - task: docs:check
+
+  clean:
+    desc: Remove build/test artifacts (bin/, dist/, the coverage profile, Go build & test caches)
+    cmds:
+      - rm -rf bin dist cover.out
+      - go clean -cache -testcache
+
+  # ------------------------------- release -------------------------------
+  #
+  # Pushing a v* tag runs .github/workflows/release.yml, which publishes
+  # for real. Both tasks need the folder to be a git repository.
+
+  release:check:
+    desc: Validate .goreleaser.yaml
+    cmds:
+      - goreleaser check
+
+  release:snapshot:
+    desc: Build the release archives into dist/ without publishing
+    cmds:
+      - goreleaser release --snapshot --clean

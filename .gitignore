@@ -1,0 +1,12 @@
+# Build artifacts (bin/ from `task build`, dist/ from GoReleaser; .task/ is
+# the Taskfile checksum cache).
+/bin/
+/dist/
+/.task/
+
+# Test artifacts (the Go coverage profile written by scripts/coverage.sh).
+*.out
+
+# Editor / IDE.
+/.idea/
+/.vscode/
